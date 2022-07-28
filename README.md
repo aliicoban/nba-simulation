@@ -20,6 +20,6 @@ Run:
     ```
 
     # Endpoint
-+ start
++ http://localhost:4444/start
 - The request payload of POST endpoint will nba simulation starts
 
