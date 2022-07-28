@@ -17,7 +17,6 @@ type Statistic struct {
 	TopScorer     Player
 }
 
-
 type Team struct {
 	Name string
 }

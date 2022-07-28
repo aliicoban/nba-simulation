@@ -1,17 +1,49 @@
 package main
 
 import (
-	game "github.com/alicobanserver/internal/game"
-	store "github.com/alicobanserver/internal/store"
-	service "github.com/alicobanserver/internal/service"
+	"context"
+	"log"
+	"net/http"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/alicobanserver/internal/service"
+	httptransport "github.com/alicobanserver/internal/transport/http"
+)
+
+const (
+	httpServerAddr         = ":4444"
+	httpServerReadTimeout  = 10 * time.Second
+	httpServerWriteTimeout = 10 * time.Second
 )
 
 func main() {
-	db := service.NewDB()
+	ctx, cancelFunc := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancelFunc()
 
-	api := store.API{
-		Db: db,
+	var s service.Service
+	{
+		s = service.NewService()
 	}
 
-	game.StartGame(api)
+	var hs http.Server
+	{
+		hh := httptransport.MakeHTTPHandler(ctx, s)
+
+		hs = http.Server{
+			Addr:         httpServerAddr,
+			ReadTimeout:  httpServerReadTimeout,
+			WriteTimeout: httpServerWriteTimeout,
+			Handler:      hh,
+		}
+
+		go func() {
+			if err := hs.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.Println("err: " + err.Error())
+			}
+		}()
+	}
+
+	<-ctx.Done()
 }
