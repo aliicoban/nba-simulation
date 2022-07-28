@@ -18,3 +18,8 @@ Run:
     ```
     docker run -p 4444:4444 nba-simulation
     ```
+
+    # Endpoint
++ start
+- The request payload of POST endpoint will nba simulation starts
+
